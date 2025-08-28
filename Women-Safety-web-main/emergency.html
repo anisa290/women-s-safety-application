@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Help</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="button-container">
+        <button class="change-whatsapp-btn" onclick="openWhatsAppModal()">Change Saved WhatsApp Number</button>
+        <button class="set-time-btn" onclick="openTimeModal()">Set E-Timer Time</button>
+    </div>
+
+    <div class="emergency-help-container">
+        <h1>Emergency Help</h1>
+        <p>If you are in an emergency situation, use the options below to get immediate assistance.</p>
+
+        <div class="emergency-options">
+            <div class="emergency-option">
+                <button class="help-button" onclick="callEmergency('police')">Call Police</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" onclick="callEmergency('fire')">Call Fire Department</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" onclick="callEmergency('medical')">Call Medical Help</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" onclick="sendSOS()">Send SOS</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" onclick="shareLocation()">Share Live Location</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" onclick="callWomenHelpline()">Call Women Helpline</button>
+            </div>
+            <div class="emergency-option">
+                <button class="help-button" id="etimer-btn" onclick="toggleETimer()">Start E-Timer</button>
+            </div>
+        </div>
+
+        <div id="timer-display" style="display: none;">
+            <p id="timer-text">Time left: 5:00</p>
+        </div>
+    </div>
+
+    <div id="set-whatsapp-number-modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Save WhatsApp Number</h2>
+            <label for="whatsapp-number">Enter WhatsApp Number:</label>
+            <input type="text" id="whatsapp-number" placeholder="Enter number with country code">
+            <button onclick="saveWhatsAppNumber()">Save</button>
+            <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="set-time-modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Set E-Timer Time</h2>
+            <label for="timer-time">Enter time in minutes:</label>
+            <input type="number" id="timer-time" placeholder="Minutes" min="1" max="60">
+            <button onclick="saveTimerTime()">Save Time</button>
+            <button onclick="closeTimeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let timerRunning = false;
+        let timerTimeLeft = 5 * 60; // 5 minutes in seconds
+        let customTimerTime = 5 * 60; // Default to 5 minutes
+
+        function openWhatsAppModal() {
+            document.getElementById('set-whatsapp-number-modal').style.display = 'block';
+        }
+
+        function openTimeModal() {
+            document.getElementById('set-time-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('set-whatsapp-number-modal').style.display = 'none';
+        }
+
+        function closeTimeModal() {
+            document.getElementById('set-time-modal').style.display = 'none';
+        }
+
+        function saveWhatsAppNumber() {
+            const whatsappNumber = document.getElementById('whatsapp-number').value;
+            if (whatsappNumber) {
+                localStorage.setItem('whatsappNumber', whatsappNumber);
+                alert('WhatsApp number saved!');
+                closeModal();
+            } else {
+                alert('Please enter a valid number');
+            }
+        }
+
+        function saveTimerTime() {
+            const customTime = document.getElementById('timer-time').value;
+            if (customTime && customTime > 0 && customTime <= 60) {
+                customTimerTime = customTime * 60; // Convert minutes to seconds
+                alert(`E-Timer set to ${customTime} minutes`);
+                closeTimeModal();
+            } else {
+                alert('Please enter a valid time between 1 and 60 minutes');
+            }
+        }
+
+        function toggleETimer() {
+            const whatsappNumber = localStorage.getItem('whatsappNumber');
+            if (!whatsappNumber) {
+                alert('No WhatsApp number saved. Please save a number first.');
+                openWhatsAppModal();
+                return;
+            }
+
+            if (timerRunning) {
+                stopETimer();
+            } else {
+                startETimer();
+            }
+        }
+
+        function startETimer() {
+            document.getElementById('etimer-btn').innerText = 'Stop E-Timer';
+            timerRunning = true;
+            document.getElementById('timer-display').style.display = 'block';
+
+            timerInterval = setInterval(function() {
+                if (timerTimeLeft > 0) {
+                    timerTimeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    shareLocation();
+                    stopETimer();
+                }
+            }, 1000);
+        }
+
+        function stopETimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            document.getElementById('etimer-btn').innerText = 'Start E-Timer';
+            document.getElementById('timer-display').style.display = 'none';
+            timerTimeLeft = customTimerTime;
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerTimeLeft / 60);
+            const seconds = timerTimeLeft % 60;
+            document.getElementById('timer-text').innerText = `Time left: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        }
+
+        function callEmergency(type) {
+            let number;
+
+            switch (type) {
+                case 'police':
+                    number = '911';
+                    break;
+                case 'fire':
+                    number = '101';
+                    break;
+                case 'medical':
+                    number = '112';
+                    break;
+                default:
+                    number = '';
+            }
+
+            if (number) {
+                window.location.href = `tel:${number}`;
+            } else {
+                alert('Invalid emergency type.');
+            }
+        }
+
+        function sendSOS() {
+            const sosNumber = '911';
+            window.location.href = `tel:${sosNumber}`;
+        }
+
+        function shareLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    const message = `Emergency! I'm at: https://www.google.com/maps?q=${lat},${lon}`;
+
+                    const whatsappNumber = localStorage.getItem('whatsappNumber');
+                    if (whatsappNumber) {
+                        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                        window.location.href = whatsappUrl; // Navigate directly to the WhatsApp link
+                    } else {
+                        alert('No WhatsApp number saved. Please save a number first.');
+                    }
+                }, function(error) {
+                    alert('Error getting location: ' + error.message);
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+
+        function callWomenHelpline() {
+            const womenHelplineNumber = '9481276801';
+            window.location.href = `tel:${womenHelplineNumber}`;
+        }
+    </script>
+</body>
+</html>

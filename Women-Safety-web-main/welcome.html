@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Women Safety Portal</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Welcome to the Women Safety Portal</h1>
+        <p>Your safety is our priority. Explore the options below:</p>
+
+        <!-- Options Section -->
+        <div class="options">
+            <button onclick="navigateTo('emergency.html')">Emergency Help</button>
+            <button onclick="navigateTo('safety-tips.html')">Safety Tips</button>
+            <button onclick="navigateTo('helpline.html')">Helpline Numbers</button>
+            <button onclick="navigateTo('community-support.html')">Community Support</button>
+        </div>
+
+        <!-- Logout Button -->
+        <button id="logout-btn" class="logout">Log Out</button>
+    </div>
+
+    <script>
+        // Logout functionality
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            localStorage.removeItem("isLoggedIn"); // Clear login status
+            window.location.href = "index.html"; // Redirect to login page
+        });
+
+        // Redirect to login page if not logged in
+        document.addEventListener("DOMContentLoaded", () => {
+            const isLoggedIn = localStorage.getItem("isLoggedIn");
+            if (isLoggedIn !== "true") {
+                window.location.href = "index.html";
+            }
+        });
+
+        // Navigation function
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+    </script>
+</body>
+</html>
